@@ -1,0 +1,62 @@
+buildscript {
+    ext {
+        buildToolsVersion = "35.0.0"
+        minSdkVersion = 24
+        compileSdkVersion = 34
+        targetSdkVersion = 34
+        ndkVersion = "26.1.10909125"   // NDK estable para RN 0.81
+        cmakeVersion = "3.22.1"
+        kotlinVersion = "1.8.22"       // compatible con RN 0.81.x
+    }
+    repositories {
+        google()
+        mavenCentral()
+    }
+    dependencies {
+        classpath("com.android.tools.build:gradle:8.3.2")
+        classpath("com.facebook.react:react-native-gradle-plugin")
+        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+    }
+}
+
+apply plugin: "com.facebook.react.rootproject"
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        // React Native y JSCore se resuelven desde node_modules
+        maven { url("$rootDir/../node_modules/react-native/android") }
+        maven { url("$rootDir/../node_modules/jsc-android/dist") }
+    }
+}
+
+// 🔹 Forzar versión exacta de React Native que tienes en package.json
+configurations.all {
+    resolutionStrategy {
+        force "com.facebook.react:react-native:0.81.4"
+    }
+}
+
+subprojects {
+    afterEvaluate { project ->
+        if ((project.plugins.hasPlugin("com.android.library") ||
+                project.plugins.hasPlugin("com.android.application"))) {
+            project.android {
+                compileSdkVersion rootProject.ext.compileSdkVersion
+
+                defaultConfig {
+                    minSdkVersion rootProject.ext.minSdkVersion
+                    targetSdkVersion rootProject.ext.targetSdkVersion
+                }
+
+                // 🔹 C++17 para evitar crash por std::format
+                externalNativeBuild {
+                    cmake {
+                        cppFlags "-std=c++17 -frtti -fexceptions"
+                    }
+                }
+            }
+        }
+    }
+}
