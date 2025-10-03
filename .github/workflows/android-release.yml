@@ -43,9 +43,9 @@ jobs:
       - name: 🔑 Dar permisos a gradlew
         run: chmod +x android/gradlew
 
-      - name: 🏗️ Compilar APK Release
+      - name: 🏗️ Compilar APK (Build completo)
         working-directory: android
-        run: ./gradlew :app:assembleRelease --stacktrace
+        run: ./gradlew build --stacktrace
 
       - name: ⬆️ Subir APK como artifact
         uses: actions/upload-artifact@v4

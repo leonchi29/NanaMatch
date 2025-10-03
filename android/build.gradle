@@ -1,21 +1,43 @@
-buildscript {
-    ext {
-        buildToolsVersion = "35.0.0"          // 🔹 estable y disponible
-        minSdkVersion = 24
-        compileSdkVersion = 34                // 🔹 34 es el último estable (36 todavía no existe)
-        targetSdkVersion = 34
-        ndkVersion = "23.1.7779620"           // 🔹 recomendado para RN
-        kotlinVersion = "1.8.22"              // 🔹 seguro para Gradle plugin
+apply plugin: "com.android.application"
+apply plugin: "com.facebook.react"
+
+import com.android.build.OutputFile
+
+android {
+    namespace "com.nanamatchapp"
+    compileSdkVersion rootProject.ext.compileSdkVersion
+
+    defaultConfig {
+        applicationId "com.nanamatchapp"
+        minSdkVersion rootProject.ext.minSdkVersion
+        targetSdkVersion rootProject.ext.targetSdkVersion
+        versionCode 1
+        versionName "1.0"
     }
-    repositories {
-        google()
-        mavenCentral()
+
+    buildTypes {
+        debug {
+            signingConfig signingConfigs.debug
+        }
+        release {
+            // 🔑 si no tienes keystore, usamos la firma debug para poder compilar
+            signingConfig signingConfigs.debug
+            minifyEnabled false
+            shrinkResources false
+            proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
+        }
     }
-    dependencies {
-        classpath("com.android.tools.build:gradle:8.3.2") // 🔹 pon versión explícita
-        classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
+
+    // ✅ Necesario para que Gradle genere las variantes (assembleRelease / assembleDebug)
+    packagingOptions {
+        pickFirst '**/*.so'
     }
 }
 
-apply plugin: "com.facebook.react.rootproject"
+dependencies {
+    implementation "com.facebook.react:react-android"
+    implementation "androidx.core:core-splashscreen:1.0.1"
+}
+
+// 👇 RN autolink
+apply from: file("../../node_modules/@react-native-community/cli-platform-android/native_modules.gradle")
